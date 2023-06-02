@@ -1,9 +1,16 @@
-import nltk
+""" 
+Helper module for the twitter sarcasm project, holds processing functions imported
+by the project's jupyter notebook. 
+"""
+
 import re
+import nltk
 import pandas as pd 
+from nltk import pos_tag
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
-import re
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 
 def _remove_url(text: str) -> str:
@@ -84,3 +91,32 @@ def preprocessing_pipeline(dataframe: pd.DataFrame) -> pd.DataFrame:
     df["tweets"] = df["tweets"].apply(clean_tweet)
     df["class"] = df['class'].apply(lambda x: encoder(x))
     return df
+
+
+def count_syntactic_features(text: str) -> dict:
+    tokens = word_tokenize(text)
+    tagged_tokens = pos_tag(tokens)
+    stop_words = set(stopwords.words('english'))
+    counts = {
+        'Stopwords': 0,
+        'Nouns': 0,
+        'Verbs': 0,
+        'Adverbs': 0,
+        'Adjectives': 0,
+        'Pronouns': 0
+    }
+    for word, pos in tagged_tokens:
+        word_lower = word.lower()
+        if word_lower in stop_words:
+            counts['Stopwords'] += 1
+        elif pos.startswith(('NN', 'NNS', 'NNP', 'NNPS')):
+            counts['Nouns'] += 1
+        elif pos.startswith('VB'):
+            counts['Verbs'] += 1
+        elif pos.startswith('RB'):
+            counts['Adverbs'] += 1
+        elif pos.startswith('JJ'):
+            counts['Adjectives'] += 1
+        elif pos.startswith('PRP'):
+            counts['Pronouns'] += 1
+    return counts
