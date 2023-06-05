@@ -5,3 +5,5 @@ data/*
 *.DS_Store
 *.pyc
 *__pycache__*
+*NLP*
+*GS*

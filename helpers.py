@@ -13,6 +13,20 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
 
+import numpy as np
+import pandas as pd
+
+from scipy.sparse import csr_matrix, hstack
+from nltk.tokenize import TweetTokenizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import LinearSVC
+from sklearn.metrics import classification_report
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
 def _remove_url(text: str) -> str:
     text=str(text)
     url = re.compile(r'https?://\S+|www\.\S+')
@@ -85,6 +99,7 @@ def encoder(t_class:str) -> int:
 
 def preprocessing_pipeline(dataframe: pd.DataFrame) -> pd.DataFrame:
     df = dataframe.copy()
+    df.dropna(inplace=True)
     df = df.drop(df[df['class'] == "figurative"].index)
     df = df.drop_duplicates(subset=["tweets"])
     df.replace(["sarcasm", "irony"], "sarcasm_irony", inplace=True)
@@ -120,3 +135,15 @@ def count_syntactic_features(text: str) -> dict:
         elif pos.startswith('PRP'):
             counts['Pronouns'] += 1
     return counts
+
+    
+def train_report(model, X,y, test_size=0.3, random_state=1337):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, 
+                                                    test_size=test_size, 
+                                                    random_state=random_state)
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    print(classification_report)
+    return model, classification_report(y_test, y_pred, output_dict=True)
+
+        
